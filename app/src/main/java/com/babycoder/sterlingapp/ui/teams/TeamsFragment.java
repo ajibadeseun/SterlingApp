@@ -2,6 +2,10 @@ package com.babycoder.sterlingapp.ui.teams;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +30,15 @@ import butterknife.BindView;
 public class TeamsFragment extends BaseFragment implements ItemSelectedListener {
     @BindView(R.id.list_competition_teams)
     RecyclerView list;
+
+    @BindView(R.id.no_fixtures_layout)
+    LinearLayout noTableLayout;
+    @BindView(R.id.retryBtn)
+    Button retryBtn;
+    @BindView(R.id.tv_error)
+    TextView errorText;
+    @BindView(R.id.loading_view)
+    ProgressBar progressBar;
 
     @Inject
     ViewModelFactory viewModelFactory;
@@ -55,6 +68,11 @@ public class TeamsFragment extends BaseFragment implements ItemSelectedListener 
         list.setAdapter(new TeamsAdapter(getBaseActivity(),teamsViewModel, this, this));
 
         displayTeams();
+
+        //Retry button clicked
+        retryBtn.setOnClickListener(v->{
+            displayTeams();
+        });
     }
 
     @Override
@@ -66,7 +84,46 @@ public class TeamsFragment extends BaseFragment implements ItemSelectedListener 
     private void displayTeams(){
         teamsViewModel.getSelectedFixture().observe(this, repo -> {
             if (repo != null) {
-                list.setVisibility(View.VISIBLE);
+                if(repo.getTeamList().size() > 0){
+                    list.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+
+                }
+                else{
+                    noTableLayout.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    list.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+
+
+                }
+
+            }
+        });
+
+        teamsViewModel.getError().observe(this,error ->{
+            if(error != null){
+                if(error){
+                    errorText.setVisibility(View.VISIBLE);
+                    errorText.setText("An error occurred, please try again later");
+                    progressBar.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+                    list.setVisibility(View.GONE);
+                }
+            }
+
+        });
+
+        teamsViewModel.getLoading().observe(this,loading->{
+            if(loading != null){
+                if(loading){
+                    progressBar.setVisibility(View.VISIBLE);
+                    list.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+                }
             }
         });
 

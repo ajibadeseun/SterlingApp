@@ -2,6 +2,10 @@ package com.babycoder.sterlingapp.ui.table;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +31,15 @@ import butterknife.ButterKnife;
 public class TableFragment  extends BaseFragment implements ItemSelectedListener {
     @BindView(R.id.list_competition_standings)
     RecyclerView list;
+    @BindView(R.id.no_fixtures_layout)
+    LinearLayout noTableLayout;
+    @BindView(R.id.retryBtn)
+    Button retryBtn;
+    @BindView(R.id.tv_error)
+    TextView errorText;
+    @BindView(R.id.loading_view)
+    ProgressBar progressBar;
+
 
 
     @Inject
@@ -56,6 +69,10 @@ public class TableFragment  extends BaseFragment implements ItemSelectedListener
         list.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
         list.setAdapter(new StandingsAdapter(getBaseActivity(),tableViewModel, this, this));
         displayTable();
+        //Retry button pressed
+        retryBtn.setOnClickListener(v->{
+            displayTable();
+        });
     }
 
     @Override
@@ -67,9 +84,52 @@ public class TableFragment  extends BaseFragment implements ItemSelectedListener
     private void displayTable(){
         tableViewModel.getSelectedGame().observe(this, repo -> {
             if (repo != null) {
-                list.setVisibility(View.VISIBLE);
+                if(repo.getStandingList().size() > 0){
+                    list.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+
+                }
+                else{
+                  noTableLayout.setVisibility(View.VISIBLE);
+                  progressBar.setVisibility(View.GONE);
+                  list.setVisibility(View.GONE);
+                  errorText.setVisibility(View.GONE);
+
+
+                }
+
             }
         });
+
+        tableViewModel.getError().observe(this,error ->{
+            if(error != null){
+
+                if(error){
+                    errorText.setVisibility(View.VISIBLE);
+                   errorText.setText("An error occurred, please try again later");
+                    progressBar.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+                    list.setVisibility(View.GONE);
+
+
+                }
+
+            }
+        });
+        tableViewModel.getLoading().observe(this,loading ->{
+            if(loading != null){
+                if(loading){
+                    progressBar.setVisibility(View.VISIBLE);
+                    list.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+
+                }
+            }
+        });
+
 
     }
 

@@ -115,23 +115,30 @@ public class StandingsAdapter extends RecyclerView.Adapter<StandingsAdapter.Stan
             Integer teamDifference = table.getTableDifference();
             Integer teamPoints = table.getTablePoints();
 
-            Picasso.get()
-                    .load(teamLogo)
-                    .placeholder(R.drawable.soccer_black)
-                    .into(imageStandingTeam, new Callback() {
-                        @Override
-                        public void onSuccess() {
+            if(teamLogo != null && !teamLogo.isEmpty()){
+                Picasso.get()
+                        .load(teamLogo)
+                        .placeholder(R.drawable.soccer_black)
+                        .into(imageStandingTeam, new Callback() {
+                            @Override
+                            public void onSuccess() {
 
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            if (!act.isFinishing()) {
-                                Glide.with(act)
-                                        .load(Uri.parse(teamLogo)).into(imageStandingTeam) ;
                             }
-                        }
-                    });
+
+                            @Override
+                            public void onError(Exception e) {
+                                if (!act.isFinishing()) {
+                                    Glide.with(act)
+                                            .load(Uri.parse(teamLogo))
+                                            .centerCrop()
+                                            .placeholder(R.drawable.soccer_black)
+                                            .into(imageStandingTeam) ;
+                                }
+                            }
+                        });
+            }
+
+
             textTeamPosition.setText(String.format("%d", teamPosition));
             textTeamName.setText(teamName);
             textTeamPlayed.setText(String.format("%d", teamPlayed));

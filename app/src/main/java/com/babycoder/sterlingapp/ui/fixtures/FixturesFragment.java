@@ -2,6 +2,10 @@ package com.babycoder.sterlingapp.ui.fixtures;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +30,15 @@ import butterknife.BindView;
 public class FixturesFragment extends BaseFragment implements ItemSelectedListener {
     @BindView(R.id.list_competition_matches)
     RecyclerView list;
+
+    @BindView(R.id.no_fixtures_layout)
+    LinearLayout noTableLayout;
+    @BindView(R.id.retryBtn)
+    Button retryBtn;
+    @BindView(R.id.tv_error)
+    TextView errorText;
+    @BindView(R.id.loading_view)
+    ProgressBar progressBar;
 
     @Inject
     ViewModelFactory viewModelFactory;
@@ -52,6 +65,10 @@ public class FixturesFragment extends BaseFragment implements ItemSelectedListen
         list.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
         list.setAdapter(new MatchesAdapter(getBaseActivity(),fixturesViewModel, this, this));
         displayFixtures();
+
+        retryBtn.setOnClickListener(v->{
+            displayFixtures();
+        });
     }
 
     @Override
@@ -63,7 +80,47 @@ public class FixturesFragment extends BaseFragment implements ItemSelectedListen
     private void displayFixtures(){
         fixturesViewModel.getSelectedGame().observe(this, repo -> {
             if (repo != null) {
-                list.setVisibility(View.VISIBLE);
+                if(repo.getMatchList().size() > 0){
+                    list.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+
+                }
+                else{
+                    noTableLayout.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    list.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+
+
+                }
+            }
+        });
+        fixturesViewModel.getError().observe(this,error->{
+            if(error != null){
+
+                if(error){
+                    errorText.setVisibility(View.VISIBLE);
+                    errorText.setText("An error occurred, please try again later");
+                    progressBar.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+                    list.setVisibility(View.GONE);
+
+
+                }
+
+            }
+        });
+        fixturesViewModel.getLoading().observe(this,loading->{
+            if(loading != null){
+                if(loading){
+                    progressBar.setVisibility(View.VISIBLE);
+                    list.setVisibility(View.GONE);
+                    noTableLayout.setVisibility(View.GONE);
+                    errorText.setVisibility(View.GONE);
+
+                }
             }
         });
 
